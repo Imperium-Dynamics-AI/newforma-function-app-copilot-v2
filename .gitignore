@@ -137,7 +137,8 @@ __azurite_db*__.json
 # uv
 uv.lock
 README.md
-pyproject.toml
 hello.py
+pdm.lock
+.pdm-python
 
 .env
