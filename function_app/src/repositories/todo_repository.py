@@ -8,3 +8,7 @@ class TodoRepository:
         endpoint = f"/users/{user_email}/todo/lists"
         payload = {"displayName": list_name}
         return await self.graph_client.request("POST", endpoint, json_body=payload)
+    
+    async def fetch_lists(self, user_email: str):
+        endpoint = f"/users/{user_email}/todo/lists"
+        return await self.graph_client.request("GET", endpoint)
