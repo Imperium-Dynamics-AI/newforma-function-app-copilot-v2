@@ -1,11 +1,23 @@
-# src/services/auth_service.py
+"""
+This module provides authentication services for obtaining access tokens
+to interact with Microsoft Graph API.
+"""
+
 from azure.identity.aio import DefaultAzureCredential
+
 from src.config.settings import settings
 
 
 class AuthService:
+    """
+    Service for handling authentication and token retrieval for Microsoft Graph API.
+    """
+
     def __init__(self):
-        # Use DefaultAzureCredential for local dev, managed identity, or environment creds
+        """
+        Initializes the AuthService with a DefaultAzureCredential and the scope
+        for Microsoft Graph API.
+        """
         self.credential = DefaultAzureCredential()
         self.scope = [settings.graph_api_scope]
 

@@ -1,11 +1,23 @@
+"""
+This module defines the TodoHandler class responsible for processing todo-related HTTP requests.
+"""
+
 import logging
+
 from src.managers.todo_manager import TodoManager
 
+
 class TodoHandler:
+    """
+    TodoHandler processes HTTP requests related to todo operations.
+    It validates input data and delegates business logic to the TodoManager.
+    """
+
     def __init__(self):
         self.manager = TodoManager()
 
     async def handle_create_todo_request(self, req):
+        """Processes a create_todo request."""
         logging.info("Processing create_todo request...")
 
         try:

@@ -1,17 +1,10 @@
+"""
+This module defines the Azure Function App and routes HTTP requests to the appropriate handlers.
+"""
+
 import azure.functions as func
-from src.handlers.todo_handler import TodoHandler
-import json
+from src.routes import todo_routes
 
-app = func.FunctionApp()
-todo_handler = TodoHandler()
+app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
-
-@app.function_name(name="create_todo")
-@app.route(route="create_todo", methods=["POST"])
-async def create_todo(req: func.HttpRequest) -> func.HttpResponse:
-    response, status_code = await todo_handler.handle_create_todo_request(req)
-    return func.HttpResponse(
-        json.dumps(response),
-        status_code=status_code,
-        mimetype="application/json"
-    )
+todo_routes.register(app)
