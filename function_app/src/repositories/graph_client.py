@@ -13,7 +13,7 @@ class GraphClient:
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
         }
-        url = f"{settings.graph_api_url}{endpoint}"
+        url = endpoint
         async with aiohttp.ClientSession() as session:
             async with session.request(method, url, headers=headers, json=json_body) as resp:
                 if resp.status >= 400:

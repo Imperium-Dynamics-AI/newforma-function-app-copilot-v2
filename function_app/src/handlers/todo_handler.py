@@ -27,3 +27,22 @@ class TodoHandler:
             return result, 400
 
         return result, 200
+
+
+    async def handle_fetch_todo_request(self, req):
+
+        try:
+            req_body = req.get_json()
+        except ValueError:
+            return {"error": "Invalid JSON payload"}, 400
+
+        user_email = req_body.get("user_email")
+        if not user_email:
+            return {"error": "'user_email' is required."}, 400
+
+        result = await self.manager.fetch_lists(user_email)
+
+        if "error" in result:
+            return result, 400
+
+        return result, 200
