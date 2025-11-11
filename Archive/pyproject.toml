@@ -13,8 +13,6 @@ dependencies = [
     "pytz",
     "validate-email-address",
     "fuzzywuzzy",
-    "aiohttp>=3.13.2",
-    "pydantic>=2.12.4",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"

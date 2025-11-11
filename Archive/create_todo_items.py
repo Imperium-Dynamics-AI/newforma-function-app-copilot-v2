@@ -1,17 +1,20 @@
+import json
 import logging
+
 import azure.functions as func
 import requests
-import json
+from fetch_todo_items import get_task_titles_in_list, get_todo_lists
 from utils import (
     get_access_token,
-    get_user_id_by_email,
-    get_todo_list_id,
     get_task_id_by_name,
+    get_todo_list_id,
+    get_user_id_by_email,
 )
 from fetch_todo_items import get_todo_lists, get_task_titles_in_list
 
 
 # Function to create a todo list
+
 
 def createTodoList(req: func.HttpRequest) -> func.HttpResponse:
     try:
@@ -46,10 +49,10 @@ def createTodoList(req: func.HttpRequest) -> func.HttpResponse:
                     existing_lists.append(line[2:].strip())
 
             # Check (case-insensitively) if the list name already exists.
-            if any(list_name.lower() == existing.lower() for existing in existing_lists):
-                return func.HttpResponse(
-                    "false", status_code=200
-                )
+            if any(
+                list_name.lower() == existing.lower() for existing in existing_lists
+            ):
+                return func.HttpResponse("false", status_code=200)
         else:
             logging.error("Error retrieving existing To-Do lists.")
             return func.HttpResponse(
@@ -72,7 +75,9 @@ def createTodoList(req: func.HttpRequest) -> func.HttpResponse:
         response = requests.post(url, headers=headers, json=list_data)
 
         if response.status_code == 201:
-            return func.HttpResponse("To-Do List Created Successfully.", status_code=201)
+            return func.HttpResponse(
+                "To-Do List Created Successfully.", status_code=201
+            )
         else:
             logging.error(
                 f"Error creating To-Do list: {response.status_code} - {response.text}"
@@ -83,6 +88,7 @@ def createTodoList(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f"Error processing request: {str(e)}")
         return func.HttpResponse(f"Internal Server Error: {str(e)}", status_code=500)
 
+
 # Function to create tasks within an existing list
 def createTodoTask(req: func.HttpRequest) -> func.HttpResponse:
     try:
@@ -92,10 +98,10 @@ def createTodoTask(req: func.HttpRequest) -> func.HttpResponse:
         task_title = req_body.get("taskName")
         task_content = req_body.get("taskContent")
         due_date = req_body.get("dueDate")  # Expected in YYYY-MM-DD format
-        timezone = req_body.get("timeZone")
+        timezone = req_body.get("timezone")
         
         # Validate required fields.
-        if not all([email, list_name, task_title, task_content,due_date,timezone]):
+        if not all([email, list_name, task_title, task_content, due_date, timezone]):
             return func.HttpResponse("false", status_code=200)
 
         access_token = get_access_token()
@@ -126,23 +132,19 @@ def createTodoTask(req: func.HttpRequest) -> func.HttpResponse:
 
             # Check if a task with the same title (case-insensitive) already exists.
             if any(task_title.lower() == title.lower() for title in existing_titles):
-                return func.HttpResponse(
-                    "false", status_code=200
-                )
+                return func.HttpResponse("false", status_code=200)
         else:
             logging.error("Error retrieving existing tasks.")
-            return func.HttpResponse(
-                "Error checking existing tasks.", status_code=500
-            )
+            return func.HttpResponse("Error checking existing tasks.", status_code=500)
         # ---------------------------------------------------------------------
 
         # API URL for creating a To-Do task
         GRAPH_API_URL = "https://graph.microsoft.com/v1.0"
         url = f"{GRAPH_API_URL}/users/{user_id}/todo/lists/{list_id}/tasks"
-        
+
         # Convert due date to ISO 8601 format with time set to 23:59
         due_datetime = f"{due_date}T23:59:00"
-        
+
         # Request payload for the new task
         task_data = {
             "title": task_title,
@@ -158,7 +160,9 @@ def createTodoTask(req: func.HttpRequest) -> func.HttpResponse:
         response = requests.post(url, headers=headers, json=task_data)
 
         if response.status_code == 201:
-            return func.HttpResponse("To-Do Task Created Successfully.", status_code=200)
+            return func.HttpResponse(
+                "To-Do Task Created Successfully.", status_code=200
+            )
         else:
             logging.error(
                 f"Error creating To-Do task: {response.status_code} - {response.text}"
@@ -167,9 +171,7 @@ def createTodoTask(req: func.HttpRequest) -> func.HttpResponse:
 
     except Exception as e:
         logging.error(f"Error processing request: {str(e)}")
-        return func.HttpResponse(
-            f"Internal Server Error: {str(e)}", status_code=500
-        )
+        return func.HttpResponse(f"Internal Server Error: {str(e)}", status_code=500)
 
 
 # Function to create subtasks in a task within an existing list
@@ -220,9 +222,7 @@ def create_subtask(req: func.HttpRequest) -> func.HttpResponse:
             logging.error(
                 f"Error creating subtask: {response.status_code} - {response.text}"
             )
-            return func.HttpResponse(
-                "false", status_code=200
-            )
+            return func.HttpResponse("false", status_code=200)
 
     except Exception as e:
         logging.error(f"Error processing request: {str(e)}")
