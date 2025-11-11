@@ -10,6 +10,8 @@ from utils import (
     get_todo_list_id,
     get_user_id_by_email,
 )
+from fetch_todo_items import get_todo_lists, get_task_titles_in_list
+
 
 # Function to create a todo list
 
@@ -96,8 +98,8 @@ def createTodoTask(req: func.HttpRequest) -> func.HttpResponse:
         task_title = req_body.get("taskName")
         task_content = req_body.get("taskContent")
         due_date = req_body.get("dueDate")  # Expected in YYYY-MM-DD format
-        timezone = req_body.get("timeZone")
-
+        timezone = req_body.get("timezone")
+        
         # Validate required fields.
         if not all([email, list_name, task_title, task_content, due_date, timezone]):
             return func.HttpResponse("false", status_code=200)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from typing import Optional
 
 
@@ -33,3 +34,10 @@ class ConflictError(AppError):
 class ValidationError(AppError):
     status_code = 422
     message = "Validation failed."
+=======
+# this file will contain all the exceptions
+
+class CustomException(Exception):
+    """Base class for custom exceptions."""
+    pass
+>>>>>>> 5836f469dd9d06b30fed4e57ab8a0fcaf29ca03f

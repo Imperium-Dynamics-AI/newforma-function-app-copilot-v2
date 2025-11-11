@@ -9,3 +9,8 @@ class TodoService:
         if not display_name:
             raise ValueError("display_name is required")
         return await self.repo.create_list(user_id, display_name)
+
+    async def fetch_lists(self, user_email: str):
+        if not user_email:
+            raise ValueError("'user_email' is required.")
+        return await self.repo.fetch_lists(user_email)
