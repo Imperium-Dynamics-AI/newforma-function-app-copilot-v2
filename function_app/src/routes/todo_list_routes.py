@@ -5,7 +5,7 @@ Module for registering To-Do list routes.
 
 import azure.functions as func
 
-from src.handlers.todo_lists_handler import TodoListsHandler
+from src.dependencies import get_todo_lists_handler
 
 
 def register_lists_routes(app: func.FunctionApp):
@@ -21,25 +21,29 @@ def register_lists_routes(app: func.FunctionApp):
     @app.route(route="todo/lists/create", methods=["POST"])
     async def create_list(req: func.HttpRequest) -> func.HttpResponse:
         """Handle POST /todo/lists/create."""
-        return await TodoListsHandler().create_list(req)
+        handler = get_todo_lists_handler()
+        return await handler.create_list(req)
 
     # Get all To-Do lists
     @app.function_name(name="get_todo_lists")
     @app.route(route="todo/lists", methods=["GET"])
     async def get_lists(req: func.HttpRequest) -> func.HttpResponse:
         """Handle GET /todo/lists?user_email=..."""
-        return await TodoListsHandler().get_lists(req)
+        handler = get_todo_lists_handler()
+        return await handler.get_lists(req)
 
     # Edit a To-Do list name
     @app.function_name(name="edit_todo_list")
     @app.route(route="todo/lists/edit", methods=["PUT"])
     async def edit_list(req: func.HttpRequest) -> func.HttpResponse:
         """Handle PUT /todo/lists/edit."""
-        return await TodoListsHandler().edit_list(req)
+        handler = get_todo_lists_handler()
+        return await handler.edit_list(req)
 
     # Delete a To-Do list
     @app.function_name(name="delete_todo_list")
     @app.route(route="todo/lists/delete", methods=["DELETE"])
     async def delete_list(req: func.HttpRequest) -> func.HttpResponse:
         """Handle DELETE /todo/lists/delete."""
-        return await TodoListsHandler().delete_list(req)
+        handler = get_todo_lists_handler()
+        return await handler.delete_list(req)

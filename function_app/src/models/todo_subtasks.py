@@ -16,7 +16,8 @@ class CreateSubtaskRequest(TodoBase):
     Request model for creating a new subtask.
     """
 
-    task_id: str
+    list_name: str = Field(..., min_length=1, max_length=100)
+    task_name: str = Field(..., min_length=1, max_length=200)
     title: str = Field(..., min_length=1, max_length=200)
 
 
@@ -37,7 +38,9 @@ class EditSubtaskRequest(TodoBase):
     Request model for editing a subtask.
     """
 
-    subtask_id: str
+    list_name: str = Field(..., min_length=1, max_length=100)
+    task_name: str = Field(..., min_length=1, max_length=200)
+    subtask_name: str = Field(..., min_length=1, max_length=200)
     new_title: str = Field(..., min_length=1, max_length=200)
 
 
@@ -46,7 +49,9 @@ class DeleteSubtaskRequest(TodoBase):
     Request model for deleting a subtask.
     """
 
-    subtask_id: str
+    list_name: str = Field(..., min_length=1, max_length=100)
+    task_name: str = Field(..., min_length=1, max_length=200)
+    subtask_name: str
 
 
 class SubtasksResponse(BaseModel):

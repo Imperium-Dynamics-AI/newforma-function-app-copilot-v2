@@ -4,7 +4,7 @@ Pydantic models for To-Do lists.
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -27,7 +27,7 @@ class ListResponse(BaseModel):
     list_id: str
     list_name: str
     user_email: EmailStr
-    created_at: datetime
+    created_at: Optional[datetime]
 
 
 class EditListRequest(TodoBase):
@@ -35,7 +35,7 @@ class EditListRequest(TodoBase):
     Request model for editing a To-Do list.
     """
 
-    list_id: str
+    list_name: str = Field(..., min_length=1, max_length=100)
     new_name: str = Field(..., min_length=1, max_length=100)
 
 
@@ -44,7 +44,7 @@ class DeleteListRequest(TodoBase):
     Request model for deleting a To-Do list.
     """
 
-    list_id: str
+    list_name: str
 
 
 class ListsResponse(BaseModel):

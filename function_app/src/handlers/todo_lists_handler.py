@@ -3,93 +3,104 @@
 Handler for To-Do list operations.
 """
 
-import logging
-
 import azure.functions as func
 
 from src.common.exceptions import TodoAPIError, ValidationError
-from src.managers.todo_manager import TodoManager
+from src.managers.todo_lists_manager import TodoListsManager
 from src.models.todo_lists import (
     CreateListRequest,
     DeleteListRequest,
     EditListRequest,
-    ListResponse,
-    ListsResponse,
 )
+from src.logging.logger import get_logger
+from src.utils.http_utils import json_response
+from src.utils.request_utils import parse_json, get_required_query_param
 
-log = logging.getLogger(__name__)
-
-
-def _json_response(data: dict, status: int = 200) -> func.HttpResponse:
-    """Helper to return JSON with correct headers."""
-    return func.HttpResponse(
-        body=data,
-        status_code=status,
-        mimetype="application/json",
-        headers={"Content-Type": "application/json"},
-    )
+logger = get_logger(__name__)
 
 
 class TodoListsHandler:
     """Processes HTTP requests for To-Do lists."""
 
-    def __init__(self) -> None:
+    def __init__(self, manager: TodoListsManager) -> None:
         """
-        Initialize the TodoListsHandler with a TodoManager instance.
+        Initialize the TodoListsHandler with a TodoListsManager instance.
+
+        Args:
+            manager (TodoListsManager): Manager for todo list operations.
         """
-        self.manager = TodoManager()
-
-    @staticmethod
-    def _parse_json(req: func.HttpRequest, model):
-        """Parse JSON and validate against a Pydantic model."""
-        try:
-            payload = req.get_json()
-        except ValueError as exc:
-            raise ValidationError("Invalid JSON payload") from exc
-
-        try:
-            return model.model_validate(payload)
-        except ValueError as exc:
-            raise ValidationError(f"Validation error: {exc}") from exc
+        self.manager = manager
 
     async def create_list(self, req: func.HttpRequest) -> func.HttpResponse:
         """Create a new To-Do list."""
         try:
-            data = self._parse_json(req, CreateListRequest)
-            result = await self.manager.create_list(data.user_email, data.list_name)
-            response = ListResponse(**result).model_dump()
-            return _json_response(response, 201)
+            data = parse_json(req, CreateListRequest)
+            logger.info("Creating list '%s' for user %s", data.list_name, data.user_email)
+            create_list_response = await self.manager.create_list(data.user_email, data.list_name)
+            logger.info("List created successfully: %s", create_list_response.list_id)
+            return json_response(create_list_response.model_dump(mode="json"), 201)
+        except ValidationError as e:
+            logger.error("Validation error creating list: %s", e.detail)
+            return json_response(e.to_response(), e.status_code)
         except TodoAPIError as e:
-            return _json_response(e.to_response(), e.status_code)
+            logger.error("API error creating list: %s", e.detail)
+            return json_response(e.to_response(), e.status_code)
 
     async def get_lists(self, req: func.HttpRequest) -> func.HttpResponse:
         """Return all lists for a user (user_email in query string)."""
         try:
-            user_email = req.params.get("user_email")
-            if not user_email:
-                raise ValidationError("Query parameter 'user_email' is required")
-            todo_lists = await self.manager.get_lists(user_email)
-            response = ListsResponse(
-                lists=[ListResponse(**todo_list) for todo_list in todo_lists]
-            ).model_dump()
-            return _json_response(response)
+            user_email = get_required_query_param(req, "user_email")
+            logger.info("Retrieving lists for user %s", user_email)
+            response = await self.manager.get_lists(user_email)
+            logger.info("Retrieved %d lists for user %s", len(response.lists), user_email)
+            return json_response(response.model_dump(mode="json"), 200)
+        except ValidationError as e:
+            logger.error("Validation error retrieving lists: %s", e.detail)
+            return json_response(e.to_response(), e.status_code)
         except TodoAPIError as e:
-            return _json_response(e.to_response(), e.status_code)
+            logger.error("API error retrieving lists: %s", e.detail)
+            return json_response(e.to_response(), e.status_code)
 
     async def edit_list(self, req: func.HttpRequest) -> func.HttpResponse:
         """Edit an existing To-Do list."""
         try:
-            data = self._parse_json(req, EditListRequest)
-            await self.manager.edit_list(data.user_email, data.list_id, data.new_name)
-            return _json_response({"message": "List updated"}, 200)
+            data = parse_json(req, EditListRequest)
+            logger.info(
+                "Editing list '%s' to name '%s' for user %s",
+                data.list_name,
+                data.new_name,
+                data.user_email,
+            )
+            await self.manager.edit_list(data.user_email, data.list_name, data.new_name)
+            logger.info("List '%s' edited successfully", data.list_name)
+            return json_response(
+                {
+                    "message": "List updated successfully",
+                    "old_list_name": data.list_name,
+                    "new_list_name": data.new_name,
+                },
+                200,
+            )
+        except ValidationError as e:
+            logger.error("Validation error editing list: %s", e.detail)
+            return json_response(e.to_response(), e.status_code)
         except TodoAPIError as e:
-            return _json_response(e.to_response(), e.status_code)
+            logger.error("API error editing list: %s", e.detail)
+            return json_response(e.to_response(), e.status_code)
 
     async def delete_list(self, req: func.HttpRequest) -> func.HttpResponse:
         """Delete a To-Do list."""
         try:
-            data = self._parse_json(req, DeleteListRequest)
-            await self.manager.delete_list(data.user_email, data.list_id)
-            return _json_response({"message": "List deleted"}, 200)
+            data = parse_json(req, DeleteListRequest)
+            logger.info("Deleting list '%s' for user %s", data.list_name, data.user_email)
+            await self.manager.delete_list(data.user_email, data.list_name)
+            logger.info("List '%s' deleted successfully", data.list_name)
+            return json_response(
+                {"message": "List deleted successfully", "list_name": data.list_name}, 200
+            )
+        except ValidationError as e:
+            logger.error("Validation error deleting list: %s", e.detail)
+            return json_response(e.to_response(), e.status_code)
         except TodoAPIError as e:
-            return _json_response(e.to_response(), e.status_code)
+            logger.error("API error deleting list: %s", e.detail)
+            return json_response(e.to_response(), e.status_code)

@@ -10,8 +10,14 @@ from typing import Any, Dict, Optional
 class TodoAPIError(Exception):
     """Base exception for all Todo-API errors."""
 
-    status_code: int = 500
-    detail: str = "Internal Server Error"
+    status_code = 500
+
+    def __init__(
+        self, detail: str = "An error occurred", error_code: str = "INTERNAL_ERROR", **kwargs
+    ):
+        self.detail = detail
+        self.error_code = error_code
+        self.extra: Dict[str, Any] = kwargs
 
     def to_response(self) -> Dict[str, Any]:
         """
@@ -20,7 +26,12 @@ class TodoAPIError(Exception):
         Returns:
             Dict[str, Any]: Error response dictionary.
         """
-        return {"error": self.detail}
+        response = {
+            "error": self.detail,
+            "error_code": self.error_code,
+        }
+        response.update(self.extra)
+        return response
 
 
 class ValidationError(TodoAPIError):
@@ -28,8 +39,10 @@ class ValidationError(TodoAPIError):
 
     status_code = 400
 
-    def __init__(self, detail: str = "Validation failed"):
-        self.detail = detail
+    def __init__(
+        self, detail: str = "Validation failed", error_code: str = "VALIDATION_ERROR", **kwargs
+    ):
+        super().__init__(detail, error_code, **kwargs)
 
 
 class NotFoundError(TodoAPIError):
@@ -37,10 +50,17 @@ class NotFoundError(TodoAPIError):
 
     status_code = 404
 
-    def __init__(self, resource: str, identifier: Optional[str] = None):
-        self.detail = f"{resource} not found"
+    def __init__(
+        self,
+        resource: str,
+        identifier: Optional[str] = None,
+        error_code: str = "NOT_FOUND",
+        **kwargs,
+    ):
+        detail = f"{resource} not found"
         if identifier:
-            self.detail += f": {identifier}"
+            detail += f": {identifier}"
+        super().__init__(detail, error_code, **kwargs)
 
 
 class ConflictError(TodoAPIError):
@@ -48,8 +68,8 @@ class ConflictError(TodoAPIError):
 
     status_code = 409
 
-    def __init__(self, detail: str = "Conflict"):
-        self.detail = detail
+    def __init__(self, detail: str = "Conflict", error_code: str = "CONFLICT", **kwargs):
+        super().__init__(detail, error_code, **kwargs)
 
 
 class UnauthorizedError(TodoAPIError):
@@ -57,5 +77,84 @@ class UnauthorizedError(TodoAPIError):
 
     status_code = 401
 
-    def __init__(self, detail: str = "Unauthorized"):
-        self.detail = detail
+    def __init__(self, detail: str = "Unauthorized", error_code: str = "UNAUTHORIZED", **kwargs):
+        super().__init__(detail, error_code, **kwargs)
+
+
+class ListNotFoundError(NotFoundError):
+    """Raised when a To-Do list is not found."""
+
+    def __init__(self, list_name: str, **kwargs):
+        super().__init__("List", list_name, error_code="LIST_NOT_FOUND", **kwargs)
+
+
+class TaskNotFoundError(NotFoundError):
+    """Raised when a task is not found."""
+
+    def __init__(self, task_name: str, **kwargs):
+        super().__init__("Task", task_name, error_code="TASK_NOT_FOUND", **kwargs)
+
+
+class SubtaskNotFoundError(NotFoundError):
+    """Raised when a subtask is not found."""
+
+    def __init__(self, subtask_name: str, **kwargs):
+        super().__init__("Subtask", subtask_name, error_code="SUBTASK_NOT_FOUND", **kwargs)
+
+
+class DuplicateListError(ConflictError):
+    """Raised when attempting to create a duplicate list."""
+
+    def __init__(self, list_name: str, **kwargs):
+        detail = f"A list with the name '{list_name}' already exists"
+        super().__init__(detail, error_code="DUPLICATE_LIST", **kwargs)
+
+
+class DuplicateTaskError(ConflictError):
+    """Raised when attempting to create a duplicate task."""
+
+    def __init__(self, task_name: str, **kwargs):
+        detail = f"A task with the title '{task_name}' already exists in this list"
+        super().__init__(detail, error_code="DUPLICATE_TASK", **kwargs)
+
+
+class DuplicateSubtaskError(ConflictError):
+    """Raised when attempting to create a duplicate subtask."""
+
+    def __init__(self, subtask_name: str, **kwargs):
+        detail = f"A subtask with the title '{subtask_name}' already exists for this task"
+        super().__init__(detail, error_code="DUPLICATE_SUBTASK", **kwargs)
+
+
+class InvalidStatusError(ValidationError):
+    """Raised when an invalid task status is provided."""
+
+    def __init__(self, status: str, valid_statuses: list = None, **kwargs):
+        if valid_statuses is None:
+            valid_statuses = ["notStarted", "inProgress", "completed", "waitingOnOthers"]
+        detail = f"Invalid status '{status}'. Must be one of {valid_statuses}"
+        super().__init__(detail, error_code="INVALID_STATUS", **kwargs)
+
+
+class EmptyFieldError(ValidationError):
+    """Raised when a required field is empty."""
+
+    def __init__(self, field_name: str, **kwargs):
+        detail = f"{field_name} cannot be empty"
+        super().__init__(detail, error_code="EMPTY_FIELD", **kwargs)
+
+
+class GraphAPIError(TodoAPIError):
+    """Raised when the Microsoft Graph API request fails."""
+
+    def __init__(self, detail: str = "Graph API request failed", http_status: int = 500, **kwargs):
+        self.status_code = http_status
+        super().__init__(detail, error_code="GRAPH_API_ERROR", **kwargs)
+
+
+class MissingParameterError(ValidationError):
+    """Raised when a required parameter is missing."""
+
+    def __init__(self, parameter_name: str, **kwargs):
+        detail = f"Required parameter '{parameter_name}' is missing"
+        super().__init__(detail, error_code="MISSING_PARAMETER", **kwargs)

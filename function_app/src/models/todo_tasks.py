@@ -16,7 +16,7 @@ class CreateTaskRequest(TodoBase):
     Request model for creating a new task.
     """
 
-    list_id: str
+    list_name: str = Field(..., min_length=1, max_length=100)
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = None
     due_date: Optional[datetime] = None
@@ -31,11 +31,10 @@ class TaskResponse(BaseModel):
     task_id: str
     list_id: str
     title: str
-    description: Optional[str]
-    status: str = Field(..., pattern="^(pending|completed)$")
-    due_date: Optional[datetime]
-    created_at: datetime
-    time_zone: str
+    description: Optional[str] = None
+    status: str = Field(default="notStarted")
+    due_date: Optional[datetime] = None
+    created_at: Optional[datetime] = None
 
 
 class EditTaskRequest(TodoBase):
@@ -43,7 +42,8 @@ class EditTaskRequest(TodoBase):
     Request model for editing a task title.
     """
 
-    task_id: str
+    list_name: str = Field(..., min_length=1, max_length=100)
+    task_name: str = Field(..., min_length=1, max_length=200)
     new_title: str = Field(..., min_length=1, max_length=200)
 
 
@@ -52,8 +52,11 @@ class UpdateTaskStatusRequest(TodoBase):
     Request model for updating task status.
     """
 
-    task_id: str
-    status: str = Field(..., pattern="^(pending|completed)$")
+    list_name: str = Field(..., min_length=1, max_length=100)
+    task_name: str = Field(..., min_length=1, max_length=200)
+    status: str = Field(
+        ..., description="Status: notStarted, inProgress, completed, or waitingOnOthers"
+    )
 
 
 class UpdateTaskDescriptionRequest(TodoBase):
@@ -61,7 +64,8 @@ class UpdateTaskDescriptionRequest(TodoBase):
     Request model for updating task description.
     """
 
-    task_id: str
+    list_name: str = Field(..., min_length=1, max_length=100)
+    task_name: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = None
 
 
@@ -70,7 +74,8 @@ class UpdateTaskDueDateRequest(TodoBase):
     Request model for updating task due date.
     """
 
-    task_id: str
+    list_name: str = Field(..., min_length=1, max_length=100)
+    task_name: str = Field(..., min_length=1, max_length=200)
     due_date: Optional[datetime] = None
     time_zone: str
 
@@ -80,7 +85,8 @@ class DeleteTaskRequest(TodoBase):
     Request model for deleting a task.
     """
 
-    task_id: str
+    list_name: str = Field(..., min_length=1, max_length=100)
+    task_name: str
 
 
 class TasksResponse(BaseModel):
