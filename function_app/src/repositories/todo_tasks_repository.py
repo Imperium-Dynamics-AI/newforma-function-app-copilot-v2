@@ -77,7 +77,7 @@ class TodoTasksRepository:
             raise DuplicateTaskError(title)
 
         endpoint = URLBuilder.todo_tasks_by_list(user_email, list_id)
-        payload = {"title": title.strip()}
+        payload = {"displayName": title.strip()}
         if description:
             payload["body"] = {"content": description, "contentType": "text"}
         if due_date:
@@ -99,7 +99,7 @@ class TodoTasksRepository:
             return {
                 "task_id": resp.get("id"),
                 "list_id": list_id,
-                "title": resp.get("title"),
+                "title": resp.get("displayName"),
                 "description": resp.get("body", {}).get("content"),
                 "status": resp.get("status", "notStarted"),
                 "due_date": resp.get("dueDateTime", {}).get("dateTime"),
@@ -181,8 +181,8 @@ class TodoTasksRepository:
             logger.warning("Attempt to rename task to existing title '%s'", new_title)
             raise DuplicateTaskError(new_title)
 
-        endpoint = URLBuilder.todo_task(user_email, task_id)
-        payload = {"title": new_title.strip()}
+        endpoint = URLBuilder.todo_task_by_list(user_email, list_id, task_id)
+        payload = {"title": new_title}
 
         try:
             await self.graph_client.request("PATCH", endpoint, json_body=payload)
@@ -190,7 +190,7 @@ class TodoTasksRepository:
                 "Successfully edited task '%s' in list '%s' with new title '%s'",
                 task_name,
                 list_name,
-                new_title.strip(),
+                new_title,
             )
         except (ListNotFoundError, TaskNotFoundError, DuplicateTaskError):
             raise
@@ -323,7 +323,7 @@ class TodoTasksRepository:
             )
             raise TaskNotFoundError(task_name)
 
-        endpoint = URLBuilder.todo_task(user_email, task_id)
+        endpoint = URLBuilder.todo_task_by_list(user_email, list_id, task_id)
         try:
             await self.graph_client.request("DELETE", endpoint)
             logger.info("Successfully deleted task '%s' from list '%s'", task_name, list_name)

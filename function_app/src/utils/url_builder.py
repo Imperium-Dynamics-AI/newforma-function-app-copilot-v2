@@ -69,16 +69,6 @@ class URLBuilder:
         )
 
     @staticmethod
-    def todo_tasks(user_email: str) -> str:
-        """Build global to-do tasks endpoint (all tasks for user)."""
-        return URLBuilder.build(graph_urls.TODO_TASKS, user_email=user_email)
-
-    @staticmethod
-    def todo_task(user_email: str, task_id: str) -> str:
-        """Build specific to-do task endpoint (global)."""
-        return URLBuilder.build(graph_urls.TODO_TASK, user_email=user_email, task_id=task_id)
-
-    @staticmethod
     def todo_subtasks(user_email: str, list_id: str, task_id: str) -> str:
         """Build subtasks (checklistItems) endpoint."""
         return URLBuilder.build(

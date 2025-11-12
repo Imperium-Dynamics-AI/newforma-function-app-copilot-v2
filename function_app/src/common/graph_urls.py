@@ -19,9 +19,6 @@ TODO_LIST = "/users/{user_email}/todo/lists/{list_id}"
 # To-Do Tasks endpoints
 TODO_TASKS_BY_LIST = "/users/{user_email}/todo/lists/{list_id}/tasks"
 TODO_TASK_BY_LIST = "/users/{user_email}/todo/lists/{list_id}/tasks/{task_id}"
-# Tasks can also be retrieved globally without specifying a list
-TODO_TASKS = "/users/{user_email}/todo/tasks"
-TODO_TASK = "/users/{user_email}/todo/tasks/{task_id}"
 
 # To-Do Subtasks (checklistItems) endpoints
 TODO_SUBTASKS = "/users/{user_email}/todo/lists/{list_id}/tasks/{task_id}/checklistItems"
