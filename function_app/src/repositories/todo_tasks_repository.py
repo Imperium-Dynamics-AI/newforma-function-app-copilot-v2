@@ -77,7 +77,7 @@ class TodoTasksRepository:
             raise DuplicateTaskError(title)
 
         endpoint = URLBuilder.todo_tasks_by_list(user_email, list_id)
-        payload = {"displayName": title.strip()}
+        payload = {"title": title.strip()}
         if description:
             payload["body"] = {"content": description, "contentType": "text"}
         if due_date:
