@@ -124,4 +124,4 @@ async def get_subtask_id_by_name(
         Exception: If the request to Graph API fails.
     """
     endpoint = f"/users/{user_email}/todo/lists/{list_id}/tasks/{task_id}/checklistItems"
-    return await get_resource_id_by_name(graph_client, endpoint, subtask_name, "title", "subtask")
+    return await get_resource_id_by_name(graph_client, endpoint, subtask_name, "displayName", "subtask")
