@@ -148,7 +148,7 @@ class GetEventsByDateRequest(EventBase):
 
 class DeleteEventRequest(EventBase):
     """
-    Request to delete an event. Old code locates events by title/date/timezone and then deletes by id.
+    Request to delete an event.
     """
 
     title: constr(min_length=1, max_length=200) = Field(
@@ -161,7 +161,7 @@ class DeleteEventRequest(EventBase):
 class EditEventSubjectRequest(EventBase):
     """
     Request to change an event's subject/title.
-    `title` = current title, `subject` = new subject (matches old code).
+    `title` = current title, `subject` = new subject.
     """
 
     title: constr(min_length=1, max_length=200) = Field(
@@ -185,8 +185,7 @@ class EditEventDescriptionRequest(EventBase):
 
 class EditEventDateTimeRequest(EventBase):
     """
-    Edit event date/time. If the event is recurring, previous code returned 'recurrence' and prevented patch.
-    Keep same fields as older implementation.
+    Edit event date/time..
     """
 
     title: constr(min_length=1, max_length=200) = Field(
@@ -205,7 +204,7 @@ class EditEventDateTimeRequest(EventBase):
 
 class AddAttendeesRequest(EventBase):
     """
-    Add attendees to an existing event identified by title+date+timezone (old behaviour).
+    Add attendees to an existing event identified by title+date+timezone.
     Accepts attendees as list of emails (manager will convert to Graph attendee objects).
     """
 
@@ -217,7 +216,7 @@ class AddAttendeesRequest(EventBase):
 
 class ModifyAttendeesRequest(AddAttendeesRequest):
     """
-    Merge existing attendees with provided ones — old code did this before sending to Graph.
+    Merge existing attendees with provided ones.
     Inherits fields from AddAttendeesRequest.
     """
 
