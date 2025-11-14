@@ -4,7 +4,7 @@ Provides factory functions for creating instances with proper dependency hierarc
 AuthManager → GraphClient → Repositories → Managers → Handlers
 """
 
-from src.repositories.calendar_repository import CalendarRepository
+from src.repositories.events_repository import EventsRepository
 from src.repositories.todo_lists_repository import TodoListsRepository
 from src.repositories.todo_tasks_repository import TodoTasksRepository
 from src.repositories.todo_subtasks_repository import TodoSubtasksRepository
@@ -12,11 +12,11 @@ from src.repositories.user_repository import UserRepository
 from src.repositories.graph_client import GraphClient
 from src.managers.auth_manager import AuthManager
 from src.managers.birthday_reminder_manager import BirthdayReminderManager
-from src.managers.calendar_event_manager import CalendarEventManager
+from src.managers.events_manager import EventsManager
 from src.managers.todo_lists_manager import TodoListsManager
 from src.managers.todo_tasks_manager import TodoTasksManager
 from src.managers.todo_subtasks_manager import TodoSubtasksManager
-from src.handlers.event_handler import EventHandler
+from src.handlers.events_handler import EventsHandler
 from src.handlers.todo_lists_handler import TodoListsHandler
 from src.handlers.todo_subtasks_handler import TodoSubtasksHandler
 from src.handlers.todo_tasks_handler import TodoTasksHandler
@@ -56,16 +56,16 @@ def get_graph_client() -> GraphClient:
 # ==================== Repositories ====================
 
 
-def get_calendar_repository() -> CalendarRepository:
+def get_events_repository() -> EventsRepository:
     """
-    Factory function to create and return a CalendarRepository instance.
+    Factory function to create and return an EventsRepository instance.
     Injects GraphClient as a dependency.
 
     Returns:
-        CalendarRepository: Instance of CalendarRepository with GraphClient injected.
+        EventsRepository: Instance of EventsRepository with GraphClient injected.
     """
     graph_client = get_graph_client()
-    return CalendarRepository(graph_client=graph_client)
+    return EventsRepository(graph_client=graph_client)
 
 
 def get_todo_lists_repository() -> TodoListsRepository:
@@ -167,16 +167,16 @@ def get_birthday_reminder_manager() -> BirthdayReminderManager:
     return BirthdayReminderManager(user_repository=user_repository)
 
 
-def get_calendar_event_manager() -> CalendarEventManager:
+def get_events_manager() -> EventsManager:
     """
-    Factory function to create and return a CalendarEventManager instance.
-    Injects CalendarRepository as a dependency.
+    Factory function to create and return an EventsManager instance.
+    Injects EventsRepository as a dependency.
 
     Returns:
-        CalendarEventManager: Instance of CalendarEventManager with CalendarRepository injected.
+        EventsManager: Instance of EventsManager with EventsRepository injected.
     """
-    calendar_repository = get_calendar_repository()
-    return CalendarEventManager(repository=calendar_repository)
+    events_repository = get_events_repository()
+    return EventsManager(repository=events_repository)
 
 
 # ==================== Handlers ====================
@@ -218,14 +218,13 @@ def get_todo_subtasks_handler() -> TodoSubtasksHandler:
     return TodoSubtasksHandler(manager=todo_subtasks_manager)
 
 
-def get_event_handler() -> EventHandler:
+def get_events_handler() -> EventsHandler:
     """
-    Factory function to create and return an EventHandler instance.
-    Injects CalendarEventManager and AuthManager as dependencies.
+    Factory function to create and return an EventsHandler instance.
+    Injects EventsManager as a dependency.
 
     Returns:
-        EventHandler: Instance of EventHandler with managers injected.
+        EventsHandler: Instance of EventsHandler with EventsManager injected.
     """
-    calendar_event_manager = get_calendar_event_manager()
-    auth_manager = get_auth_manager()
-    return EventHandler(calendar_event_manager=calendar_event_manager, auth_manager=auth_manager)
+    events_manager = get_events_manager()
+    return EventsHandler(manager=events_manager)

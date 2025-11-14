@@ -158,3 +158,35 @@ class MissingParameterError(ValidationError):
     def __init__(self, parameter_name: str, **kwargs):
         detail = f"Required parameter '{parameter_name}' is missing"
         super().__init__(detail, error_code="MISSING_PARAMETER", **kwargs)
+
+
+# ==================== Event-specific Exceptions ====================
+
+
+class EventNotFoundError(NotFoundError):
+    """Raised when a calendar event is not found."""
+
+    def __init__(self, event_identifier: str, **kwargs):
+        super().__init__("Event", event_identifier, error_code="EVENT_NOT_FOUND", **kwargs)
+
+
+class DuplicateEventError(ConflictError):
+    """Raised when attempting to create a duplicate event."""
+
+    def __init__(self, event_title: str, **kwargs):
+        detail = f"An event with the title '{event_title}' already exists at this time"
+        super().__init__(detail, error_code="DUPLICATE_EVENT", **kwargs)
+
+
+class InvalidTimeRangeError(ValidationError):
+    """Raised when event time range is invalid (end before start)."""
+
+    def __init__(self, detail: str = "Invalid time range: end time must be after start time", **kwargs):
+        super().__init__(detail, error_code="INVALID_TIME_RANGE", **kwargs)
+
+
+class InvalidRecurrenceError(ValidationError):
+    """Raised when recurrence pattern parameters are invalid."""
+
+    def __init__(self, detail: str = "Invalid recurrence configuration", **kwargs):
+        super().__init__(detail, error_code="INVALID_RECURRENCE", **kwargs)
